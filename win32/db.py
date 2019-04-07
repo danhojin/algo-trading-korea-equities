@@ -6,7 +6,7 @@ db = orm.Database(
     create_db=True
 )
 
-class Stock(db.Entity):
+class Asset(db.Entity):
     code = orm.PrimaryKey(str, auto=True)
     name = orm.Optional(str)
     market_indices = orm.Set('MarketIndex')
@@ -15,7 +15,7 @@ class Stock(db.Entity):
 class MarketIndex(db.Entity):
     id = orm.PrimaryKey(int, auto=True)
     symbol = orm.Required(str)
-    stock = orm.Required(Stock)
+    asset = orm.Required(Asset)
 
 # turn on debug mode
 # orm.sql_debug(True)
@@ -23,15 +23,15 @@ class MarketIndex(db.Entity):
 db.generate_mapping(create_tables=True)
 
 @orm.db_session
-def insert_into_Stock(stocks):
-    for stock in stocks:
-        s = Stock.get(code=stock['code'])
-        if s is None:
-            Stock(**stock)
+def insert_into_Asset(assets):
+    for asset in assets:
+        a = Asset.get(code=asset['code'])
+        if a is None:
+            Asset(**asset)
 
 @orm.db_session
 def insert_into_MarketIndex(market_indices):
     for index in market_indices:
-        i = MarketIndex.get(symbol=index['symbol'], stock=index['stock'])
+        i = MarketIndex.get(symbol=index['symbol'], asset=index['asset'])
         if i is None:
             MarketIndex(**index)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>638</width>
+    <height>466</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,15 +16,106 @@
   <widget class="QPushButton" name="button_get_code_list">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>420</x>
      <y>20</y>
-     <width>121</width>
+     <width>191</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>GetCodeListByMarket</string>
    </property>
+  </widget>
+  <widget class="QTableWidget" name="obs_table">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>371</width>
+     <height>370</height>
+    </rect>
+   </property>
+   <property name="rowCount">
+    <number>10</number>
+   </property>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <row/>
+   <column>
+    <property name="text">
+     <string>이벤트시간</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>체결가</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>누적거래량</string>
+    </property>
+   </column>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>70</y>
+     <width>191</width>
+     <height>370</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Code</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="obs_line_code"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="obs_btn_set_real_reg">
+      <property name="text">
+       <string>SetRealReg</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="obs_btn_set_real_remove">
+      <property name="text">
+       <string>SetRealRemove</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
