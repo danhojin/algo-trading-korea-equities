@@ -12,6 +12,8 @@ from kafka import KafkaProducer
 import db
 from settings import KW_CONTROL_CLSID, KAFKA_BOOTSTRAP_SERVER
 
+import pandas as pd
+
 
 KW_MARKET = {
     'FLOOR': '0',  # 장내
@@ -51,8 +53,12 @@ class AppCollectInfo(QtWidgets.QWidget):
         self.ui.obs_btn_set_real_remove.clicked.connect(
             self.obs_btn_set_real_remove_cb
         )
+        self.ui.obs2_but_set_codes.clicked.connect(
+            self.ob2_but_set_codes_cb
+        )
 
         self.obs_cells = deque([], maxlen=10)
+        self.obs2_cells = deque([], maxlen=20)
         self.kafka_producer = KafkaProducer(
             bootstrap_servers=[KAFKA_BOOTSTRAP_SERVER],
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
@@ -101,6 +107,19 @@ class AppCollectInfo(QtWidgets.QWidget):
             'SetRealRemove(QString, QString)',
             'All', 'All'
         )
+
+    def ob2_but_set_codes_cb(self):
+        df = pd.read_csv(
+            '../scraps_markets/list_kospi200.csv',
+            dtype={'code': str},
+        )
+        df_obs2 = df.sample(n=20)
+        # iteration over rows
+        # see. https://medium.com/@rtjeannier/pandas-101-cont-9d061cb73bfc
+        for i, (_, row) in enumerate(df_obs2.iterrows()):
+            # print(i, row['code'], row['name'])
+            self.ui.obs2_table.setItem(i, 0, QtWidgets.QTableWidgetItem(row['code']))
+            self.ui.obs2_table.setItem(i, 1, QtWidgets.QTableWidgetItem(row['name']))
 
     def on_event_connect(self, err_code):
         if err_code == 0:
