@@ -41,23 +41,23 @@ class AppCollectInfo(QtWidgets.QWidget):
         self.ui = Ui_CollectInfo()
         self.ui.setupUi(self)
         for symbol in KW_MARKET:
-            self.ui.button_get_code_list.clicked.connect(
+            self.ui.get1_but_codes.clicked.connect(
                 partial(
-                    self.button_get_code_list_clicked,
+                    self.get1_but_codes_clicked_cb,
                     KW_MARKET,
                     symbol)
             )
-        self.ui.obs_btn_set_real_reg.clicked.connect(
-            self.obs_btn_set_real_reg_cb
+        self.ui.obs1_but_watching.clicked.connect(
+            self.obs1_but_watching_clicked_cb
         )
-        self.ui.obs_btn_set_real_remove.clicked.connect(
-            self.obs_btn_set_real_remove_cb
+        self.ui.obs1_but_stop.clicked.connect(
+            self.obs1_but_stop_clicked_cb
         )
         self.ui.obs2_but_set_codes.clicked.connect(
-            self.ob2_but_set_codes_cb
+            self.obs2_but_set_codes_cb
         )
 
-        self.obs_cells = deque([], maxlen=10)
+        self.obs1_cells = deque([], maxlen=10)
         self.obs2_cells = deque([], maxlen=20)
         self.kafka_producer = KafkaProducer(
             bootstrap_servers=[KAFKA_BOOTSTRAP_SERVER],
@@ -78,7 +78,7 @@ class AppCollectInfo(QtWidgets.QWidget):
                 13
             )
             now = datetime.now().strftime('%H:%M:%S')
-            self.obs_cells.append((
+            self.obs1_cells.append((
                 now,
                 price,
                 cum_volume
@@ -89,26 +89,26 @@ class AppCollectInfo(QtWidgets.QWidget):
                 { 'event': now, 'price': price, 'cum_volume': cum_volume }
             )
 
-            self.obs_table_refresh()
+            self.obs1_table_refresh()
 
-    def obs_table_refresh(self):
-        for i, data in enumerate(self.obs_cells):
+    def obs1_table_refresh(self):
+        for i, data in enumerate(self.obs1_cells):
             for j, v in enumerate(data):
-                self.ui.obs_table.setItem(i, j, QtWidgets.QTableWidgetItem(v))
+                self.ui.obs1_table.setItem(i, j, QtWidgets.QTableWidgetItem(v))
 
-    def obs_btn_set_real_reg_cb(self):
-        code = self.ui.obs_line_code.text()
+    def obs1_but_watching_clicked_cb(self):
+        code = self.ui.obs1_line_code.text()
         self.kiwoom.dynamicCall(
             "SetRealReg(QString, QString, QString, QString)",
             "0150", code, "9001;10;13", "0")
 
-    def obs_btn_set_real_remove_cb(self):
+    def obs1_but_stop_clicked_cb(self):
         self.kiwoom.dynamicCall(
             'SetRealRemove(QString, QString)',
             'All', 'All'
         )
 
-    def ob2_but_set_codes_cb(self):
+    def obs2_but_set_codes_cb(self):
         df = pd.read_csv(
             '../scraps_markets/list_kospi200.csv',
             dtype={'code': str},
@@ -127,7 +127,7 @@ class AppCollectInfo(QtWidgets.QWidget):
         else:
             print(err_code)
 
-    def button_get_code_list_clicked(self, market, symbol):
+    def get1_but_codes_clicked_cb(self, market, symbol):
         assets = self.kiwoom.dynamicCall(
             'GetCodeListByMarket(QString)',
             market[symbol]
@@ -145,7 +145,7 @@ class AppCollectInfo(QtWidgets.QWidget):
 
         market_indices = [{
             'symbol': symbol,
-            'stock': code,
+            'asset': code,
         } for (symbol, code) in zip(
             itertools.repeat(symbol),
             [s['code'] for s in assets]

@@ -1,9 +1,17 @@
 from pony import orm
+from settings import (
+    PG_USERNAME,
+    PG_PASSWORD,
+    PG_HOST,
+    PG_DATABASE,
+)
 
 db = orm.Database(
-    'sqlite',
-    'db.sqlite3',
-    create_db=True
+    provider='postgres',
+    user=PG_USERNAME,
+    password=PG_PASSWORD,
+    host=PG_HOST,
+    database=PG_DATABASE,
 )
 
 class Asset(db.Entity):

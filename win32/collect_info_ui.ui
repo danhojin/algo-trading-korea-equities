@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Collect Info</string>
   </property>
-  <widget class="QPushButton" name="button_get_code_list">
+  <widget class="QPushButton" name="get1_but_codes">
    <property name="geometry">
     <rect>
      <x>420</x>
@@ -26,7 +26,7 @@
     <string>GetCodeListByMarket</string>
    </property>
   </widget>
-  <widget class="QTableWidget" name="obs_table">
+  <widget class="QTableWidget" name="obs1_table">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -84,21 +84,25 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="obs_line_code"/>
+       <widget class="QLineEdit" name="obs1_line_code">
+        <property name="text">
+         <string>035420</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="obs_btn_set_real_reg">
+     <widget class="QPushButton" name="obs1_but_watching">
       <property name="text">
-       <string>SetRealReg</string>
+       <string>Watching</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="obs_btn_set_real_remove">
+     <widget class="QPushButton" name="obs1_but_stop">
       <property name="text">
-       <string>SetRealRemove</string>
+       <string>Stop</string>
       </property>
      </widget>
     </item>
