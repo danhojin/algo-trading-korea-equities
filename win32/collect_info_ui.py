@@ -51,7 +51,7 @@ class Ui_CollectInfo(object):
         self.verticalLayout.addItem(spacerItem)
         self.obs2_table = QtWidgets.QTableWidget(CollectInfo)
         self.obs2_table.setGeometry(QtCore.QRect(20, 470, 461, 401))
-        self.obs2_table.setRowCount(50)
+        self.obs2_table.setRowCount(100)
         self.obs2_table.setObjectName("obs2_table")
         self.obs2_table.setColumnCount(4)
         item = QtWidgets.QTableWidgetItem()

@@ -14,6 +14,7 @@ db = orm.Database(
     database=PG_DATABASE,
 )
 
+
 class Asset(db.Entity):
     code = orm.PrimaryKey(str, auto=True)
     name = orm.Optional(str)
