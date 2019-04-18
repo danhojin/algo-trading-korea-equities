@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for scraps_markets project
+# Scrapy settings for market_scraping project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,14 +9,14 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'scraps_markets'
+BOT_NAME = 'market_scraping'
 
-SPIDER_MODULES = ['scraps_markets.spiders']
-NEWSPIDER_MODULE = 'scraps_markets.spiders'
+SPIDER_MODULES = ['market_scraping.spiders']
+NEWSPIDER_MODULE = 'market_scraping.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'scraps_markets (+http://www.yourdomain.com)'
+#USER_AGENT = 'market_scraping (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False 
@@ -47,13 +47,13 @@ DOWNLOAD_DELAY = 2
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'scraps_markets.middlewares.ScrapsMarketsSpiderMiddleware': 543,
+#    'market_scraping.middlewares.ScrapsMarketsSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'scraps_markets.middlewares.ScrapsMarketsDownloaderMiddleware': 543,
+#    'market_scraping.middlewares.ScrapsMarketsDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
@@ -65,7 +65,7 @@ DOWNLOAD_DELAY = 2
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    'scraps_markets.pipelines.ScrapsMarketsPipeline': 300,
+#    'market_scrapings.pipelines.ScrapsMarketsPipeline': 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
