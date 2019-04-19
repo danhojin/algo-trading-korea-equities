@@ -54,6 +54,8 @@ class DailyAssetPricesSpider(scrapy.Spider):
             del record['change']
             record['date'] = date_parse(record['date']).date()
             record['asset'] = self.code
+            for k in ['close', 'open', 'high', 'low', 'volume']:
+                record[k] = float(record[k])
 
             if record['date'] <= self.latest_date:
                 orm.commit()

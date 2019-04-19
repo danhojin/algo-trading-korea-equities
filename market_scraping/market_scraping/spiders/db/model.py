@@ -33,12 +33,12 @@ class Asset(db.Entity):
 
 class DailyPrice(db.Entity):
     id = PrimaryKey(int, auto=True)
-    date = Optional(date)
-    open = Optional(str)
-    high = Optional(str)
-    low = Optional(str)
-    close = Optional(str)
-    volume = Optional(str)
+    date = Required(date)
+    open = Optional(float)
+    high = Optional(float)
+    low = Optional(float)
+    close = Required(float)
+    volume = Required(float)
     asset = Required(Asset)
 
 
