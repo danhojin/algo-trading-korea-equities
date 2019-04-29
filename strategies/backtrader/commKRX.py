@@ -19,10 +19,6 @@ class CommInfoKRX(bt.CommInfoBase):
 
 
 class DummyOrder(bt.SignalStrategy):
-    params = (('pfast', 10), ('pslow', 30),)
-
-    def __init__(self):
-        super().__init__()
 
     def next(self):
         if not self.position:
