@@ -28,6 +28,7 @@ class Asset(db.Entity):
     name = Optional(str)
     is_active = Optional(str)
     daily_prices = Set('DailyPrice')
+    is_adjusted = Optional(bool, default=False)
     market_indices = Set('MarketIndex')
 
 
