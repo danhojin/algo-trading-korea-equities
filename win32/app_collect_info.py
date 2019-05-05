@@ -31,6 +31,8 @@ KW_MARKET = {
     'K-OTC': '30',
 }
 
+KW_CONTROL_CLSID = 'A1574A0D-6BFA-4BD7-9020-DED88711818D'
+
 class AppCollectInfo(QtWidgets.QWidget):
 
     def __init__(self):
