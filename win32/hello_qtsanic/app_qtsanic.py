@@ -1,3 +1,4 @@
+import asyncio
 from PyQt5 import (
     QtCore,
     QtWidgets,
@@ -34,6 +35,7 @@ class SanicThread(QtCore.QThread):
     def __init__(self, sapp):
         super().__init__()
         self.sapp = sapp
+        # self.loop = asyncio.new_event_loop()
 
     def run(self):
         self.sapp.run(host='0.0.0.0', port=8000)
