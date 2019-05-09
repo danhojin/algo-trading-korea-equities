@@ -18,24 +18,24 @@ class CommInfoKRX(bt.CommInfoBase):
                 else abs(size) * (tax + self.p.commission) * price)
 
 
-class DummyOrder(bt.SignalStrategy):
+if __name__ == '__main__':
+    class DummyOrder(bt.SignalStrategy):
 
-    def next(self):
-        if not self.position:
-            self.order = self.buy()
-        else:
-            self.order = self.sell()
+        def next(self):
+            if not self.position:
+                self.order = self.buy()
+            else:
+                self.order = self.sell()
 
+    cerebro = bt.Cerebro()
+    comminfo = CommInfoKRX(commission=0.015)  # Kiwoom HTS, 0.xx%
+    cerebro.broker.addcommissioninfo(comminfo)
 
-cerebro = bt.Cerebro()
-comminfo = CommInfoKRX(commission=0.015)  # Kiwoom HTS, 0.xx%
-cerebro.broker.addcommissioninfo(comminfo)
+    data = bt.feeds.YahooFinanceCSVData(dataname='datas/commKRXdummy.txt',
+                                        fromdate=datetime(1995, 1, 3),
+                                        todate=datetime(1995, 1, 10))
 
-data = bt.feeds.YahooFinanceCSVData(dataname='datas/commKRXdummy.txt',
-                                    fromdate=datetime(1995, 1, 3),
-                                    todate=datetime(1995, 1, 10))
-
-cerebro.adddata(data)
-cerebro.addstrategy(DummyOrder)
-cerebro.run()
-cerebro.plot()
+    cerebro.adddata(data)
+    cerebro.addstrategy(DummyOrder)
+    cerebro.run()
+    cerebro.plot()
