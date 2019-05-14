@@ -43,4 +43,4 @@ if __name__ == '__main__':
     p = Process(target=qapp_run)
     p.start()
     # p.join()
-    app.run(port=8000)
+    app.run(host='0.0.0.0', port=1337, workers=2)
