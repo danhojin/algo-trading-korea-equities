@@ -1,4 +1,7 @@
 from sanic.response import json, text
+from sanic.views import HTTPMethodView
+
+from broker.sapp.api import quotes
 
 
 def setup_routes(app, q):
@@ -13,3 +16,8 @@ def setup_routes(app, q):
         q.put(code_id)
         print(f's:{code_id}')
         return text(f'done: {code_id}')
+
+    app.blueprint(quotes.bp, url_prefix='/api')
+
+    for handler, (rule, router) in app.router.routes_names.items():
+        print(rule)
