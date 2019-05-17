@@ -17,10 +17,12 @@ class RegisterForm(QtWidgets.QWidget):
             KW_CONTROL_CLSID
         )
         self.kiwoom.OnEventConnect.connect(self.on_event_connect)
-        self.kiwoom.OnReceiveTrData.connect(self.on_receive_tr_data)
+        self.kiwoom.OnReceiveTrData.connect(self.on_receive_tr_data_cb)
+        self.kiwoom.OnReceiveRealData.connect(self.on_receive_real_data_cb)
 
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        self.ui.button_register.clicked.connect(self.button_register_cb)
 
         self.kiwoom.dynamicCall('CommConnect()')
         self.th.start()
@@ -37,10 +39,19 @@ class RegisterForm(QtWidgets.QWidget):
         else:
             print(err)
 
-    def on_receive_tr_data(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
+    def on_receive_tr_data_cb(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):
         if rqname == 'BalanceRq':
             total = self.kiwoom.dynamicCall('CommGetData(QString, QString, QString, int, QString', trcode, '', rqname, 0, '총평가금액')
             print(total)
+
+    def on_receive_real_data_cb(self, s_code, s_real_type, s_real_data):
+        if s_real_type == '주식체결':
+            s_real_data = s_real_data.strip().split()
+            print('traded: ', s_real_data)
+        elif s_real_type == '주식호가잔량':
+            s_real_data = s_real_data.strip().split()
+            print('bid/ask: ', s_real_data)
+            
 
     def balance_info(self):
         self.kiwoom.dynamicCall('SetInputValue(QString, QString)', '계좌번호', self.accounts[0])
@@ -53,6 +64,13 @@ class RegisterForm(QtWidgets.QWidget):
     def listening_q(self):
         self.ui.codeLineEdit.setText('1234')
         self.balance_info()
+
+    def button_register_cb(self):
+        code = self.ui.codeLineEdit.text()
+        self.kiwoom.dynamicCall(
+            'SetRealReg(QString, QString, QString, QString)',
+            '0150', code, '9001;302;10;13;27;28;41;61', '0'
+        )
 
 
 class ListenSappWorker(QtCore.QThread):
