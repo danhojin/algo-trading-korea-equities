@@ -6,11 +6,25 @@ from sanic.views import HTTPMethodView
 from dateutil.parser import parse
 
 from krx_dataserver.models import (
+    asset,
     dailyprice,
 )
 
 
 bp_dailyprices = Blueprint('bp_dailyprice', url_prefix='/dailyprices')
+
+
+@bp_dailyprices.route('/')
+async def get_dailyprices_list(request):
+    query = dailyprice.select() \
+        .distinct(dailyprice.c.asset)
+    scraped = await request.app.db.fetch_all(query=query)
+
+    query = asset.select() \
+        .where(asset.c.code.in_(s['asset'] for s in scraped))
+    rows = await request.app.db.fetch_all(query=query)
+
+    return json({row['code']:row['name'] for row in rows})
 
 
 @bp_dailyprices.route('/<asset>/<start>/<stop>')
@@ -27,7 +41,7 @@ async def get_dailyprices(request, asset, start, stop):
         .where(dailyprice.c.asset == asset) \
         .where(dailyprice.c.date >= start) \
         .where(dailyprice.c.date < stop) \
-        .order_by(dailyprice.c.date.desc())
+        .order_by(dailyprice.c.date)
 
     rows = await request.app.db.fetch_all(query=query)
 
