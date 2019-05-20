@@ -15,11 +15,13 @@ bp_dailyprices = Blueprint('bp_dailyprice', url_prefix='/dailyprices')
 
 @bp_dailyprices.route('/<asset>/<start>/<stop>')
 async def get_dailyprices(request, asset, start, stop):
+    # need to check the existence of asset
     try:
         start = parse(start).date()
         stop = parse(stop).date()
     except ValueError:
-        raise ServerError('Date error', status_code=500)
+        # 416 Range Not Satisfiable
+        raise ServerError('Date error', status_code=416)
 
     query = dailyprice.select() \
         .where(dailyprice.c.asset == asset) \
@@ -29,7 +31,13 @@ async def get_dailyprices(request, asset, start, stop):
 
     rows = await request.app.db.fetch_all(query=query)
 
-    return json({row['date']: row['close'] for row in rows})
+    return json({row['date']: (
+        row['open'],
+        row['high'],
+        row['low'],
+        row['close'],
+        row['volume'],
+    ) for row in rows})
 
 
 class MarketDataDailyPriceView(HTTPMethodView):
