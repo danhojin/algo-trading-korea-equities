@@ -18,14 +18,15 @@ def setup_database(app):
         await app.db.disconnect()
 
 
-def sapp_create(q):
+def sapp_create(message_queue):
     app = Sanic(__name__)
+    app.message_queue = message_queue
 
     env = Env()
     env.read_env()
     app.config.from_object(Settings)
 
     setup_database(app)
-    setup_routes(app, q)
+    setup_routes(app)
 
     return app

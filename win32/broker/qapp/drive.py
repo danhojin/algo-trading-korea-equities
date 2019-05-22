@@ -22,16 +22,17 @@ def on_receive_real(real_type):
 
 class RegisterForm(QtWidgets.QWidget):
 
-    def __init__(self, q):
+    def __init__(self, message_queue):
         super().__init__()
-        self.q = q
-        self.th = ListenSappWorker(self.q)
+        self.message_queue = message_queue
+        self.listen_sapp_code = ListenSappWorker(self.message_queue, 'code')
+        self.listen_sapp_real_traded = ListenSappWorker(self.message_queue, 'realtime')
         self.kiwoom = QAxContainer.QAxWidget(
             KW_CONTROL_CLSID
         )
         self.kiwoom.OnEventConnect.connect(self.on_event_connect)
         self.kiwoom.OnReceiveTrData.connect(self.on_receive_tr_data_cb)
-        self.kiwoom.OnReceiveRealData.connect(self.on_real_traded)
+        self.kiwoom.OnReceiveRealData.connect(self.on_sapp_real_traded_cb)
         # self.kiwoom.OnReceiveRealData.connect(self.on_real_bidask)
 
         self.ui = Ui_Form()
@@ -39,8 +40,11 @@ class RegisterForm(QtWidgets.QWidget):
         self.ui.button_register.clicked.connect(self.button_register_cb)
 
         self.kiwoom.dynamicCall('CommConnect()')
-        self.th.start()
-        self.th.code.connect(self.listening_q)
+        self.listen_sapp_code.rq.connect(self.listening_q)
+        self.listen_sapp_code.start()
+        self.listen_sapp_real_traded.rq.connect(
+            self.on_sapp_real_traded_cb)
+        self.listen_sapp_real_traded.start()
 
     def on_event_connect(self, err):
         if err == 0:
@@ -88,9 +92,14 @@ class RegisterForm(QtWidgets.QWidget):
                                 'BalanceRq', 'opw00018', '0', '8000')
         print('RqCommitted')
 
-    def listening_q(self):
-        self.ui.codeLineEdit.setText('1234')
+    @QtCore.pyqtSlot(str)
+    def listening_q(self, asset):
+        self.ui.codeLineEdit.setText(asset)
         self.balance_info()
+
+    @QtCore.pyqtSlot(str)
+    def on_sapp_real_traded_cb(self, assets):
+        print(assets)
 
     def button_register_cb(self):
         code = self.ui.codeLineEdit.text()
@@ -107,24 +116,25 @@ class RegisterForm(QtWidgets.QWidget):
 
 class ListenSappWorker(QtCore.QThread):
 
-    code = QtCore.pyqtSignal(str)
+    rq = QtCore.pyqtSignal(str)
 
-    def __init__(self, q):
+    def __init__(self, message_queue, sapp_rq):
         super().__init__()
-        self.q = q
+        self.message_queue = message_queue
+        self.sapp_rq = sapp_rq
 
     def __del__(self):
         self.wait()
 
     def run(self):
         while True:
-            data = self.q.get()
+            data = self.message_queue[self.sapp_rq].get()
             print(f'q:{data}')
-            self.code.emit('f{data}')
+            self.rq.emit(data)
 
 
-def qapp_run(q):
+def qapp_run(message_queue):
     qapp = QtWidgets.QApplication([])
-    register_form = RegisterForm(q)
+    register_form = RegisterForm(message_queue)
     register_form.show()
     qapp.exec()

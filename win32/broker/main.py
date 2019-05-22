@@ -4,12 +4,14 @@ from broker.qapp.drive import qapp_run
 from multiprocessing import Process, Queue
 
 def init():
-    q = Queue()
+    message_queue = dict()
+    message_queue['realtime'] = Queue()
+    message_queue['code'] = Queue()
 
-    p = Process(target=qapp_run, args=(q,))
-    p.start()
+    qapp_process = Process(target=qapp_run, args=(message_queue,))
+    qapp_process.start()
 
-    sapp = sapp_create(q)
+    sapp = sapp_create(message_queue)
     sapp.run(
         host=sapp.config.HOST,
         port=sapp.config.PORT,
