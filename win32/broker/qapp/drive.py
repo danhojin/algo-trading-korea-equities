@@ -4,8 +4,10 @@ from PyQt5 import QtCore
 from broker.qapp.register_ui import Ui_Form
 
 import datetime
+import json
+from environs import Env
+from kafka import KafkaProducer
 
-# KHOPENAPI.KHOpenAPICtrl.1
 # KW_CONTROL_CLSID = 'A1574A0D-6BFA-4BD7-9020-DED88711818D'
 KW_CONTROL_CLSID = 'KHOPENAPI.KHOpenAPICtrl.1'
 
@@ -25,26 +27,38 @@ class RegisterForm(QtWidgets.QWidget):
     def __init__(self, message_queue):
         super().__init__()
         self.message_queue = message_queue
-        self.listen_sapp_code = ListenSappWorker(self.message_queue, 'code')
-        self.listen_sapp_real_traded = ListenSappWorker(self.message_queue, 'realtime')
+        self.listen_sapp_code = ListenSappWorker(
+            self.message_queue['code'])
+        self.listen_sapp_realtime_traded = ListenSappWorker(
+            self.message_queue['realtime'])
         self.kiwoom = QAxContainer.QAxWidget(
             KW_CONTROL_CLSID
         )
         self.kiwoom.OnEventConnect.connect(self.on_event_connect)
         self.kiwoom.OnReceiveTrData.connect(self.on_receive_tr_data_cb)
-        self.kiwoom.OnReceiveRealData.connect(self.on_sapp_real_traded_cb)
-        # self.kiwoom.OnReceiveRealData.connect(self.on_real_bidask)
+        self.kiwoom.OnReceiveRealData.connect(self.on_realtime_traded)
 
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.ui.button_register.clicked.connect(self.button_register_cb)
 
         self.kiwoom.dynamicCall('CommConnect()')
+
+        # interactions with sanic app
         self.listen_sapp_code.rq.connect(self.listening_q)
         self.listen_sapp_code.start()
-        self.listen_sapp_real_traded.rq.connect(
-            self.on_sapp_real_traded_cb)
-        self.listen_sapp_real_traded.start()
+        self.listen_sapp_realtime_traded.rq.connect(
+            self.on_sapp_realtime_traded_cb)
+        self.listen_sapp_realtime_traded.start()
+
+        # kafka producer
+        env = Env()
+        env.read_env()
+        self.prefix = datetime.datetime.now().date()
+        self.prefix = 'RT_' + str(self.prefix) + '_'
+        self.kafka_producer = KafkaProducer(
+            bootstrap_servers=[env('KAFKA_BOOTSTRAP_SERVER')],
+            value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
     def on_event_connect(self, err):
         if err == 0:
@@ -66,16 +80,22 @@ class RegisterForm(QtWidgets.QWidget):
             print(total)
 
     @on_receive_real('주식체결')
-    def on_real_traded(self, s_code, s_real_type, s_real_data):
+    def on_realtime_traded(self, s_code, s_real_type, s_real_data):
         s_real_data = s_real_data.strip().split()
         deal = dict()
-        deal['time'] = (s_real_data[0][:2], s_real_data[0][2:4], s_real_data[0][4:])
-        deal['time'] = datetime.time(*map(lambda x: int(x), deal['time']))
-        deal['quote'] = float(s_real_data[1])
-        deal['cum_volume'] = float(s_real_data[7])
+        deal['ts'] = (s_real_data[0][:2], s_real_data[0][2:4], s_real_data[0][4:])
+        deal['ts'] = datetime.time(*map(lambda x: int(x), deal['ts']))
+        deal['ts'] = str(deal['ts'])
+        deal['price'] = float(s_real_data[1])
+        deal['cvol'] = float(s_real_data[7])
+        print(deal)
+        self.kafka_producer.send(
+            self.prefix + s_code,
+            deal
+        )
 
     @on_receive_real('주식호가잔량')
-    def on_real_bidask(self, s_code, s_real_type, s_real_data):
+    def on_realtime_bidask(self, s_code, s_real_type, s_real_data):
         s_real_data = s_real_data.strip().split()
         print('bida', '-'*10, s_real_data[:3])
 
@@ -98,8 +118,18 @@ class RegisterForm(QtWidgets.QWidget):
         self.balance_info()
 
     @QtCore.pyqtSlot(str)
-    def on_sapp_real_traded_cb(self, assets):
-        print(assets)
+    def on_sapp_realtime_traded_cb(self, assets):
+        if 'clear' in assets:
+            self.kiwoom.dynamicCall(
+                'SetRealRemove(QString, QString)',
+                'ALL',
+                'ALL'
+            )
+        else:
+            self.kiwoom.dynamicCall(
+                'SetRealReg(QString, QString, QString, QString)',
+                '0150', assets, '20', '0'
+            )
 
     def button_register_cb(self):
         code = self.ui.codeLineEdit.text()
@@ -118,18 +148,16 @@ class ListenSappWorker(QtCore.QThread):
 
     rq = QtCore.pyqtSignal(str)
 
-    def __init__(self, message_queue, sapp_rq):
+    def __init__(self, incoming_box):
         super().__init__()
-        self.message_queue = message_queue
-        self.sapp_rq = sapp_rq
+        self.incoming_box = incoming_box
 
     def __del__(self):
         self.wait()
 
     def run(self):
         while True:
-            data = self.message_queue[self.sapp_rq].get()
-            print(f'q:{data}')
+            data = self.incoming_box.get()
             self.rq.emit(data)
 
 

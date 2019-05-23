@@ -17,3 +17,11 @@ async def set_watching_list(request):
         request.json['assets']
     )
     return json({'rq': request.json})
+
+@bp.route('/realtime', methods=['DELETE'])
+async def remove_watching_list(request):
+    print('clear')
+    request.app.message_queue['realtime'].put(
+        'clear'
+    )
+    return json({'rq': 'all'})
