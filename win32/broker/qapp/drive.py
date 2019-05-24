@@ -63,11 +63,13 @@ class RegisterForm(QtWidgets.QWidget):
     def on_event_connect(self, err):
         if err == 0:
             print('Connected')
+            '''
             user = self.kiwoom.dynamicCall('GetLoginInfo(QString)', 'USER_ID')
             accounts = self.kiwoom.dynamicCall('GetLoginInfo(QString)', 'ACCLIST')
             print(user, accounts)
             self.accounts = accounts.split(';')
             self.balance_info()
+            '''
         else:
             print(err)
 
@@ -88,7 +90,7 @@ class RegisterForm(QtWidgets.QWidget):
         deal['ts'] = str(deal['ts'])
         deal['price'] = float(s_real_data[1])
         deal['cvol'] = float(s_real_data[7])
-        print(deal)
+        # print(deal)
         self.kafka_producer.send(
             self.prefix + s_code,
             deal
