@@ -6,7 +6,7 @@ class CommInfoKRX(bt.CommInfoBase):
     params = (
         ('stocklike', True),
         ('commtype', bt.CommInfoBase.COMM_PERC),
-        ('percabs', False),  # 0.xx%
+        ('percabs', False),  # take percentage
     )
 
     def __init__(self):
@@ -14,6 +14,7 @@ class CommInfoKRX(bt.CommInfoBase):
 
     def _getcommission(self, size, price, pseudoexec):
         tax = 0.3 * 0.01  # 0.3%
+        tax += 0.2 * 0.01 # additional noise penalty
         return (abs(size) * self.p.commission * price if size > 0
                 else abs(size) * (tax + self.p.commission) * price)
 
@@ -28,7 +29,7 @@ if __name__ == '__main__':
                 self.order = self.sell()
 
     cerebro = bt.Cerebro()
-    comminfo = CommInfoKRX(commission=0.015)  # Kiwoom HTS, 0.xx%
+    comminfo = CommInfoKRX(commission=0.015)  # Kiwoom HTS, 0.015%
     cerebro.broker.addcommissioninfo(comminfo)
 
     data = bt.feeds.YahooFinanceCSVData(dataname='datas/commKRXdummy.txt',
