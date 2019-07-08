@@ -9,6 +9,7 @@ import datetime
 
 TR_REQ_TIME_INTERVAL = 4.0
 today = datetime.date.today().strftime('%Y%m%d')
+# today = datetime.date(2019, 6, 30)
 
 class Kiwoom(QAxWidget):
     '''
@@ -22,7 +23,7 @@ class Kiwoom(QAxWidget):
         c = self.conn.cursor()
         c.execute(
             'CREATE TABLE IF NOT EXISTS dailyprices'
-            ' (asset text, date text, open real, high real,'
+            ' (symbol text, date text, open real, high real,'
             ' low real, close real, volume real)'
         )
         self.conn.commit()
