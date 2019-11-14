@@ -3,7 +3,7 @@ insert into Tactic (name, endpoint) values ('hasla2', 'http://localhost:8000/has
 insert into Tactic (name, endpoint) values ('sokcho1', 'http://localhost:8000/sokcho1');
 insert into Tactic (name, endpoint) values ('samcheok1', 'http://localhost:8000/samcheok1');
 insert into Asset (symbol, num_shares, max_shares, position_size, is_active, tactic) values (
-    '000100', 0, 50, 1, 1, 1
+    '000100', 0, 50, 1, 1, 5
 );
 insert into Asset (symbol, num_shares, max_shares, position_size, is_active, tactic) values (
     '000100', 0, 50, 2, 1, 3

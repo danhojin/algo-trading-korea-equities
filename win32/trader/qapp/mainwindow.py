@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -78,7 +78,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.combo_asset_state = QtWidgets.QComboBox(self.groupBox_2)
-        self.combo_asset_state.setEnabled(False)
+        self.combo_asset_state.setEnabled(True)
         self.combo_asset_state.setObjectName("combo_asset_state")
         self.horizontalLayout_2.addWidget(self.combo_asset_state)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)

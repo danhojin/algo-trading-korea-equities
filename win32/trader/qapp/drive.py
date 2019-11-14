@@ -193,7 +193,7 @@ class MainWindow(QtWidgets.QMainWindow):
             t_sec = (t_run.hour() - t_now.hour()) * 3600
             t_sec += (t_run.minute() - t_now.minute()) * 60
             t_sec += (t_run.second() - t_now.second())
-            t_sec = max(t_sec, 1)
+            t_sec = max(t_sec, 10)
             print(t_sec)
             if self.autorun_timer:
                 self.autorun_timer.stop()
@@ -212,7 +212,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.autorun_timer = None
 
     def autorun_process(self):
-        self.on_but_balance()
+        # self.on_but_balance()
         self.on_but_draw_actions()
         self.on_but_send_orders()
 
@@ -391,6 +391,11 @@ class MainWindow(QtWidgets.QMainWindow):
         net_buy = 0
         net_sell = 0
         for symbol, row in self.row['order'].items():
+            item = self.model['order'].item(
+                row, self.col['order']['symbol'])
+            if item.checkState() != Qt.Checked:
+                print(f'{symbol} is not checked. Do nothing.')
+                continue
             print('draw', symbol, row)
             with orm.db_session:
                 asset = db.Asset.get(symbol=symbol)
@@ -435,6 +440,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_but_send_orders(self):
         col = self.col['order']
         for symbol, row in self.row['order'].items():
+            item = self.model['order'].item(
+                row, col['symbol'])
+            if item.checkState() != Qt.Checked:
+                print(f'{symbol} is not checked. Do nothing.')
+                continue
             buy = self.get_model_data(
                 'order', row, col['action'])
             print('but_send_orders', buy, symbol)
@@ -446,6 +456,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         'order',
                         row, self.col['order']['num_shares']),
                     buy)
+                if buy == 0:  # no shares to sell
+                    continue
             close_price = self.get_model_data(
                 'order',
                 row, self.col['order']['quote'])
@@ -529,6 +541,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.but_balance.setStyleSheet('background-color: green')
             else:
                 self.ui.but_balance.setStyleSheet('background-color: gray')
+            self.on_but_balance()
         else:
             print('Error:', err)
 
@@ -555,22 +568,26 @@ class MainWindow(QtWidgets.QMainWindow):
             symbol, status = self.kiwoom_get_chejan_data(
                 [9001, 913])
             symbol = symbol.lstrip('A')
+            if symbol not in self.row['order']:
+                print(f'unknown transaction, {symbol}')
+                return
             order_id, order_type = self.kiwoom_get_chejan_data(
                 [9203, 905])
+            order_type = 1 if '+' in order_type else -1
             if status == order_status['accepted']:
                 print(f'chejan, accepted id {order_id}, o {order_type}')
             elif status == order_status['completed']:
                 print(f'chejan, completed id {order_id}, o {order_type}')
-                price, qty, qty_remained, net_value = \
-                    self.kiwoom_get_chejan_data([910, 911, 902, 903])
+                price, qty, qty_remained, net_value, unit_qty = \
+                    self.kiwoom_get_chejan_data([910, 915, 902, 903, 915])
                 price, qty = int(price), int(qty)
                 qty_remained, net_value = int(qty_remained), int(net_value)
-                print('chejan 0: ', symbol, status, price, qty)
+                qty_remained *= order_type
+                print('chejan 0: ', symbol, status, price, qty, unit_qty)
                 print('chejan 0-1:', qty_remained, net_value)
 
                 if qty_remained == 0:
-                    sell, buy = (0, -1) if '+' in order_type \
-                        else (1, 0)
+                    sell, buy = (0, -1) if order_type == 1 else (1, 0)
                     sell *= net_value
                     buy *= net_value
                     sell += self.get_model_data(
@@ -600,13 +617,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 item = self.model['order'].item(
                     self.row['order'][symbol],
                     self.col['order']['action_remained'])
-                item.setData('{:+}'.format(int(qty_remained)), Qt.DisplayRole)
+                item.setData('{:+}'.format(qty_remained), Qt.DisplayRole)
 
                 with orm.db_session:
                     asset = db.Asset.get(symbol=symbol)
                     print('ass1: ', asset.symbol)
                     db.Entry(asset=asset, date=TODAY.isoformat(),
-                             price=price, order=qty)
+                             price=price, order=qty*order_type)
 
                 # self.kiwoom_comm_rq_data(
                 #     'balance_close2', 'opw00004', 0, '0200')
@@ -616,6 +633,9 @@ class MainWindow(QtWidgets.QMainWindow):
             symbol, num_shares = self.kiwoom_get_chejan_data(
                 [9001, 930])
             symbol = symbol.lstrip('A')
+            if symbol not in self.row['order']:
+                print(f'unknown transaction, {symbol}')
+                return
             num_shares = int(num_shares)
             print('chejan 1: ', symbol, num_shares)
 
