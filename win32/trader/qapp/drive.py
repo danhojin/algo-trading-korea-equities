@@ -720,6 +720,7 @@ class MainWindow(QtWidgets.QMainWindow):
             s_tr_code, s_record_name, 0, '종목코드')
         print('tr:symbol', symbol)
         t_open = QtCore.QTime(9, 0, 0)
+        # t_open = QtCore.QTime(10, 0, 0)
         t_now = QtCore.QTime.currentTime()
         if t_now > QtCore.QTime(15, 20, 0):
             t_frac = 390.0 / 380.0

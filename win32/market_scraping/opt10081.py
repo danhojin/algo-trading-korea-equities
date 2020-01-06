@@ -6,6 +6,7 @@ import time
 import sqlite3
 from dateutil.parser import parse
 import datetime
+import pandas as pd
 
 TR_REQ_TIME_INTERVAL = 4.0
 today = datetime.date.today().strftime('%Y%m%d')
@@ -19,10 +20,10 @@ class Kiwoom(QAxWidget):
         super().__init__()
         self._create_kiwoom_instance()
         self._set_signal_slots()
-        self.conn = sqlite3.connect('krx.db')
+        self.conn = sqlite3.connect('krx.sqlite')
         c = self.conn.cursor()
         c.execute(
-            'CREATE TABLE IF NOT EXISTS dailyprices'
+            'CREATE TABLE IF NOT EXISTS prices_daily'
             ' (symbol text, date text, open real, high real,'
             ' low real, close real, volume real)'
         )
@@ -86,7 +87,7 @@ class Kiwoom(QAxWidget):
             if len(self.records) > 1700 or self.remained_data is False:
                 c = self.conn.cursor()
                 c.executemany(
-                    'INSERT INTO dailyprices VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO prices_daily VALUES (?, ?, ?, ?, ?, ?, ?)',
                     self.records
                 )
                 self.conn.commit()
@@ -103,7 +104,7 @@ class Kiwoom(QAxWidget):
         data_cnt = self._get_repeat_cnt(trcode, rqname)
 
         # data_cnt = 20 if data_cnt > 20 else data_cnt
-        asset = self._comm_get_data(trcode, "", rqname, 0, "종목코드") 
+        symbol = self._comm_get_data(trcode, "", rqname, 0, "종목코드") 
         for i in range(data_cnt):
             date = self._comm_get_data(trcode, "", rqname, i, "일자")
             open = self._comm_get_data(trcode, "", rqname, i, "시가")
@@ -111,31 +112,34 @@ class Kiwoom(QAxWidget):
             low = self._comm_get_data(trcode, "", rqname, i, "저가")
             close = self._comm_get_data(trcode, "", rqname, i, "현재가")
             volume = self._comm_get_data(trcode, "", rqname, i, "거래량")
-            # print(asset, date, open, high, low, close, volume)
+            # print(symbol, date, open, high, low, close, volume)
             self.records.append((
-                asset, parse(date).date().isoformat(), open, high, low, close, volume,
+                symbol, parse(date).date().isoformat(), open, high, low, close, volume,
             ))
-        print(asset, data_cnt)
+        print(symbol, data_cnt)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = Kiwoom()
     kiwoom.comm_connect()
 
-    assets = [
-        '069500', '114800', '122630', '252670',
-    ]
+    df_assets = pd.read_csv('kospi200kosdaq150.csv', dtype={'symbol': str, 'name': str})
 
-    for asset in assets:
+    # assets = [
+    #     '069500', '114800', '122630', '252670',
+    # ]
+
+    for k, symbol in enumerate(df_assets.iloc[300:, 0]):
+        print(f'{k}: {symbol}')
         # opt10081 TR 요청
-        kiwoom.set_input_value("종목코드", asset)
+        kiwoom.set_input_value("종목코드", symbol)
         kiwoom.set_input_value("기준일자", today)
         kiwoom.set_input_value("수정주가구분", 1)
         kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
 
         while kiwoom.remained_data == True:
             time.sleep(TR_REQ_TIME_INTERVAL)
-            kiwoom.set_input_value("종목코드", asset)
+            kiwoom.set_input_value("종목코드", symbol)
             kiwoom.set_input_value("기준일자", today)
             kiwoom.set_input_value("수정주가구분", 1)
             kiwoom.comm_rq_data("opt10081_req", "opt10081", 2, "0101")
