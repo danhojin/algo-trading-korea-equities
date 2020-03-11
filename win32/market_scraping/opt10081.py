@@ -8,7 +8,7 @@ from dateutil.parser import parse
 import datetime
 import pandas as pd
 
-TR_REQ_TIME_INTERVAL = 4.0
+TR_REQ_TIME_INTERVAL = 5.0
 today = datetime.date.today().strftime('%Y%m%d')
 # today = datetime.date(2019, 6, 30)
 
@@ -20,7 +20,7 @@ class Kiwoom(QAxWidget):
         super().__init__()
         self._create_kiwoom_instance()
         self._set_signal_slots()
-        self.conn = sqlite3.connect('krx.sqlite')
+        self.conn = sqlite3.connect('krx2.sqlite')
         c = self.conn.cursor()
         c.execute(
             'CREATE TABLE IF NOT EXISTS prices_daily'
@@ -84,7 +84,7 @@ class Kiwoom(QAxWidget):
 
         if rqname == "opt10081_req":
             self._opt10081(rqname, trcode)
-            if len(self.records) > 1700 or self.remained_data is False:
+            if len(self.records) > 2300 or self.remained_data is False:  # 600 * 4
                 c = self.conn.cursor()
                 c.executemany(
                     'INSERT INTO prices_daily VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -123,15 +123,14 @@ if __name__ == "__main__":
     kiwoom = Kiwoom()
     kiwoom.comm_connect()
 
-    df_assets = pd.read_csv('kospi200kosdaq150.csv', dtype={'symbol': str, 'name': str})
+    df_assets = pd.read_csv(
+        'market_cap20191114.csv', 
+        dtype={'name': str, 'symbol': str, 'cap': int, 'market': str})
 
-    # assets = [
-    #     '069500', '114800', '122630', '252670',
-    # ]
-
-    for k, symbol in enumerate(df_assets.iloc[300:, 0]):
+    for k, symbol in enumerate(df_assets.iloc[1789:, 1]):  # col 1, symbol
         print(f'{k}: {symbol}')
         # opt10081 TR 요청
+        time.sleep(TR_REQ_TIME_INTERVAL)
         kiwoom.set_input_value("종목코드", symbol)
         kiwoom.set_input_value("기준일자", today)
         kiwoom.set_input_value("수정주가구분", 1)
